@@ -79,7 +79,8 @@ def write_slices(arguments, rfh, frames_per_slice, remainder):
     if (arguments.prefix is not None):
         prefix = arguments.prefix
     else:
-        prefix = arguments.source
+        # Strip suffix from source
+        prefix = os.path.splitext(arguments.source)[0]
 
     # Get File Details
     nchannels = rfh.getnchannels()

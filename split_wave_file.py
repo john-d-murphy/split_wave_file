@@ -17,6 +17,7 @@ log_format = "[%(asctime)s] %(message)s"
 logging.basicConfig(format = log_format)
 log.setLevel(logging.DEBUG)
 
+#### Main
 
 def main():
     ### Parse and display arguments
@@ -31,6 +32,7 @@ def main():
     ### Write Slices
     write_slices(arguments, rfh, frames_per_slice, remainder)
 
+#### Helper Methods
 
 def parse_arguments():
 

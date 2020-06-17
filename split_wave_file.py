@@ -20,6 +20,7 @@ log.setLevel(logging.DEBUG)
 #### Main
 
 def main():
+
     ### Parse and display arguments
     arguments = parse_arguments()
 

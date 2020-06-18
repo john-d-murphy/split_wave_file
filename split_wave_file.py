@@ -26,7 +26,7 @@ def main():
     arguments = parse_arguments()
 
     ### Get Read File Handle
-    converter = get_converter(arguments)
+    [ converter, extension ] = get_converter(arguments)
 
     ### Convert File
     if (converter is not None):
@@ -36,7 +36,7 @@ def main():
         [ frames_per_slice, remainder ] = get_frames_per_slice(arguments, rfh)
 
         ### Write Slices
-        write_slices(arguments, rfh, frames_per_slice, remainder, converter)
+        write_slices(arguments, rfh, frames_per_slice, remainder, converter, extension)
 
         log.info("Success                - Check [%s] for output files" % arguments.destination_directory)
 
@@ -72,12 +72,15 @@ def get_converter(arguments):
 
     if (file_type == "audio/x-wav"):
         converter = __import__("wave")
+        extension = "wav"
     elif(file_type == "audio/x-aiff"):
         converter = __import__("aifc")
+        extension = "aif"
     else:
         converter = None
+        extension = None
 
-    return converter
+    return [ converter, extension ]
 
 def get_frames_per_slice(arguments, rfh):
 
@@ -96,7 +99,7 @@ def get_frames_per_slice(arguments, rfh):
 
     return [ frames_per_slice, remainder ]
 
-def write_slices(arguments, rfh, frames_per_slice, remainder, converter):
+def write_slices(arguments, rfh, frames_per_slice, remainder, converter, extension):
 
     # Get Filename Prefix
     if (arguments.prefix is not None):
@@ -114,7 +117,7 @@ def write_slices(arguments, rfh, frames_per_slice, remainder, converter):
 
     # Write Files
     for audio_slice in range(int(arguments.number_of_slices)):
-        file_name = arguments.destination_directory + "/" + prefix + "_" + str(audio_slice + 1).rjust(3, '0') + ".wav"
+        file_name = arguments.destination_directory + "/" + prefix + "_" + str(audio_slice + 1).rjust(3, '0') + "." + extension
         log.info("Writing                - %s" % file_name)
 
         # Set Position of Read Handle

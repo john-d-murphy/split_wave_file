@@ -39,10 +39,8 @@ def main():
         write_slices(arguments, rfh, frames_per_slice, remainder, converter, extension)
 
         log.info("Success                - Check [%s] for output files" % arguments.destination_directory)
-
     else:
         log.info("Failure                - Invalid File Type [%s] Found - only wav and aif supported" % file_type)
-
 
 #### Helper Methods
 

@@ -9,7 +9,8 @@ import logging
 import os
 import sys
 import time
-import wave
+import aifc
+import mimetypes
 
 #### Logger
 log = logging.getLogger('root')
@@ -25,15 +26,35 @@ def main():
     arguments = parse_arguments()
 
     ### Get Read File Handle
-    rfh = wave.open(arguments.source, mode="rb")
+    converter = get_converter(arguments)
+
+    if (converter == None):
+        return 1
+
+    rfh = converter.open(arguments.source, mode="rb")
 
     ### Get Slice Information
     [ frames_per_slice, remainder ] = get_frames_per_slice(arguments, rfh)
 
     ### Write Slices
-    write_slices(arguments, rfh, frames_per_slice, remainder)
+    write_slices(arguments, rfh, frames_per_slice, remainder, converter)
+
+    log.info("Success                - Check [%s] for output files" % arguments.destination_directory)
 
 #### Helper Methods
+
+def get_converter(arguments):
+    file_type =  mimetypes.guess_type(arguments.source)[0]
+
+    if (file_type == "audio/x-wav"):
+        converter = __import__("wave")
+    elif(file_type == "audio/x-aiff"):
+        converter = __import__("aifc")
+    else:
+        log.info("Failure                - Invalid File Type [%s] Found - only wav and aif supported" % file_type)
+        converter = None
+
+    return converter
 
 def parse_arguments():
 
@@ -73,7 +94,7 @@ def get_frames_per_slice(arguments, rfh):
 
     return [ frames_per_slice, remainder ]
 
-def write_slices(arguments, rfh, frames_per_slice, remainder):
+def write_slices(arguments, rfh, frames_per_slice, remainder, converter):
 
     # Get Filename Prefix
     if (arguments.prefix is not None):
@@ -90,8 +111,8 @@ def write_slices(arguments, rfh, frames_per_slice, remainder):
     current_pos = 0
 
     # Write Files
-    for wave_slice in range(int(arguments.number_of_slices)):
-        file_name = arguments.destination_directory + "/" + prefix + "_" + str(wave_slice + 1).rjust(3, '0') + ".wav"
+    for audio_slice in range(int(arguments.number_of_slices)):
+        file_name = arguments.destination_directory + "/" + prefix + "_" + str(audio_slice + 1).rjust(3, '0') + ".wav"
         log.info("Writing                - %s" % file_name)
 
         # Set Position of Read Handle
@@ -99,7 +120,7 @@ def write_slices(arguments, rfh, frames_per_slice, remainder):
         rfh.setpos(current_pos)
 
         # Read And Increment Position
-        if (wave_slice < (int(arguments.number_of_slices) - remainder)):
+        if (audio_slice < (int(arguments.number_of_slices) - remainder)):
             data = rfh.readframes(frames_per_slice)
             current_pos = current_pos + frames_per_slice
         else:
@@ -110,7 +131,7 @@ def write_slices(arguments, rfh, frames_per_slice, remainder):
         if (not os.path.isdir(arguments.destination_directory)):
             os.mkdir(arguments.destination_directory)
 
-        wfh = wave.open(file_name, mode="wb")
+        wfh = converter.open(file_name, mode="wb")
         wfh.setnchannels(nchannels)
         wfh.setsampwidth(sampwidth)
         wfh.setframerate(framerate)

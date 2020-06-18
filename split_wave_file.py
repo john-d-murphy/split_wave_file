@@ -28,18 +28,21 @@ def main():
     ### Get Read File Handle
     converter = get_converter(arguments)
 
-    if (converter == None):
-        return 1
+    ### Convert File
+    if (converter is not None):
+        rfh = converter.open(arguments.source, mode="rb")
 
-    rfh = converter.open(arguments.source, mode="rb")
+        ### Get Slice Information
+        [ frames_per_slice, remainder ] = get_frames_per_slice(arguments, rfh)
 
-    ### Get Slice Information
-    [ frames_per_slice, remainder ] = get_frames_per_slice(arguments, rfh)
+        ### Write Slices
+        write_slices(arguments, rfh, frames_per_slice, remainder, converter)
 
-    ### Write Slices
-    write_slices(arguments, rfh, frames_per_slice, remainder, converter)
+        log.info("Success                - Check [%s] for output files" % arguments.destination_directory)
 
-    log.info("Success                - Check [%s] for output files" % arguments.destination_directory)
+    else:
+        log.info("Failure                - Invalid File Type [%s] Found - only wav and aif supported" % file_type)
+
 
 #### Helper Methods
 
@@ -72,7 +75,6 @@ def get_converter(arguments):
     elif(file_type == "audio/x-aiff"):
         converter = __import__("aifc")
     else:
-        log.info("Failure                - Invalid File Type [%s] Found - only wav and aif supported" % file_type)
         converter = None
 
     return converter

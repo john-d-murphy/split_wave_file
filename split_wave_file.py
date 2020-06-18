@@ -43,19 +43,6 @@ def main():
 
 #### Helper Methods
 
-def get_converter(arguments):
-    file_type =  mimetypes.guess_type(arguments.source)[0]
-
-    if (file_type == "audio/x-wav"):
-        converter = __import__("wave")
-    elif(file_type == "audio/x-aiff"):
-        converter = __import__("aifc")
-    else:
-        log.info("Failure                - Invalid File Type [%s] Found - only wav and aif supported" % file_type)
-        converter = None
-
-    return converter
-
 def parse_arguments():
 
     ### Get arguments
@@ -76,6 +63,19 @@ def parse_arguments():
         log.info( "Prefix                 - %s" % arguments.prefix)
 
     return arguments
+
+def get_converter(arguments):
+    file_type =  mimetypes.guess_type(arguments.source)[0]
+
+    if (file_type == "audio/x-wav"):
+        converter = __import__("wave")
+    elif(file_type == "audio/x-aiff"):
+        converter = __import__("aifc")
+    else:
+        log.info("Failure                - Invalid File Type [%s] Found - only wav and aif supported" % file_type)
+        converter = None
+
+    return converter
 
 def get_frames_per_slice(arguments, rfh):
 
